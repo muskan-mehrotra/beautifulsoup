@@ -5,10 +5,6 @@ To explore the original source code of BeautifulSoup. Locate the exact files/lin
 
 ## Answer - Part 2 - Milestone-2
 
-...existing code...
-
-## Answer - Part 2 - Milestone-2
-
 | File Name                           | Line Number   | Function            | Use Case                                                                 |
 |-------------------------------------|----------------|---------------------|--------------------------------------------------------------------------|
 | ./bs4/element.py                    | 2601           | prettify()          | Returns a formatted (pretty-printed) string of the parsed tree           |
