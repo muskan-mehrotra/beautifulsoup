@@ -1,16 +1,12 @@
 """
-SoupReplacer API
-Implements a lightweight extension to BeautifulSoup that allows
-tag replacement during parsing rather than after, similar in design
-to SoupStrainer.
+Modified SoupReplacer API (Milestone 3)
+Extends the BeautifulSoup parser to perform tag name and attribute
+transformations during parsing, similar to SoupStrainer.
 
-Usage example:
-    from soup_replacer import BeautifulSoup, SoupReplacer
-
-    html_doc = "<b>Bold</b><b>Text</b>"
-    b_to_blockquote = SoupReplacer("b", "blockquote")
-    soup = BeautifulSoup(html_doc, replacer=b_to_blockquote)
-    print(soup.prettify())
+Now supports:
+  - Simple replacement: SoupReplacer("b", "blockquote")
+  - Transformer API:
+        SoupReplacer(name_xformer=None, attrs_xformer=None, xformer=None)
 """
 
 from bs4 import BeautifulSoup as OriginalBeautifulSoup
@@ -18,39 +14,53 @@ from bs4.element import Tag
 
 class SoupReplacer:
     """
-    Defining a simple rule for replacing one tag with another during parsing.
-    Parameters for replacing og_tag with alt_tag:
-        og_tag (str): The original tag name to be replaced.
-        alt_tag (str): The tag name to replace it with.
+    A tag transformation/replacement utility used during BeautifulSoup parsing.
     """
-    def __init__(self, og_tag, alt_tag):
+
+    def __init__(self, og_tag=None, alt_tag=None, name_xformer=None, attrs_xformer=None, xformer=None):
+        # Milestone 2 (simple replacement with more tags)
         self.og_tag = og_tag
         self.alt_tag = alt_tag
 
+        # Milestone 3 (transformer functions)
+        self.name_xformer = name_xformer
+        self.attrs_xformer = attrs_xformer
+        self.xformer = xformer
+
     def should_replace(self, tag_name):
-        # Return True if this tag should be replaced
-        return tag_name == self.og_tag
+       #Check if this tag should be replaced (Milestone 2 mode)
+        return self.og_tag is not None and tag_name == self.og_tag
 
-    def get_replacement(self, tag_name):
-        # Return the replacement tag name
-        return self.alt_tag if self.should_replace(tag_name) else tag_name
+    def transform_tag(self, tag):
+        """
+        Apply transformations in the following order:
+          1. Simple replacement (Milestone 2)
+          2. name_xformer / attrs_xformer
+          3. xformer (side-effect transformer)
+        """
+        # 1. Simple replace mode
+        if self.should_replace(tag.name):
+            tag.name = self.alt_tag
 
+        # 2. Transformer functions (Milestone 3)
+        if self.name_xformer:
+            tag.name = self.name_xformer(tag)
+        if self.attrs_xformer:
+            tag.attrs = self.attrs_xformer(tag)
+        if self.xformer:
+            self.xformer(tag)
+
+        return tag
 
 class BeautifulSoup(OriginalBeautifulSoup):
-    """
-    A subclass of BeautifulSoup that accepts an optional 'replacer'
-    argument. When provided, tag creation will respect the replacement
-    rules defined by the SoupReplacer object.
-    """
-
-    def __init__(self, markup="", features=None, replacer=None, **kwargs):
+    #Subclass of BeautifulSoup that supports 'replacer' during parsing.
+    def __init__(self, markup="", replacer=None, **kwargs):
         self.replacer = replacer
-        # Initialize using parent class constructor
-        super().__init__(markup, features=features, **kwargs)
+        super().__init__(markup, **kwargs)
+        if self.replacer:
+            self.apply_replacer(self.replacer)
 
-    # Override the internal tag creation mechanism
-    def new_tag(self, name, namespace=None, nsprefix=None, **attrs):
-        # Intercept tag creation
-        if self.replacer and self.replacer.should_replace(name):
-            name = self.replacer.get_replacement(name)
-        return super().new_tag(name, namespace=namespace, nsprefix=nsprefix, **attrs)
+    def apply_replacer(self, replacer):
+        #Apply SoupReplacer transformations on all tags.
+        for tag in self.find_all(True):
+            replacer.transform_tag(tag)
