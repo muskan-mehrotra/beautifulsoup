@@ -1,4 +1,4 @@
-# Milestone 3: Technical Defrief for SoupReplacer API for BeautifulSoup 
+# Milestone 3: Technical Debrief for SoupReplacer API for BeautifulSoup 
 
 ## Overview
 The **SoupReplacer** API extends BeautifulSoup to allow **tag name and attribute transformations during parsing**, similar in concept to `SoupStrainer`. Unlike the Milestone 2 version, which only supported simple tag replacements, this Milestone 3 version introduces a **flexible transformer-based approach**, enabling complex modifications to both tag names and attributes, as well as arbitrary side-effect transformations.
