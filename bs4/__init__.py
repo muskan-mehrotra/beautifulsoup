@@ -1078,15 +1078,17 @@ class BeautifulSoup(Tag):
         - We MUST NOT build a list of nodes first (no recursion, no list accumulation).
         - We MUST use an existing generator-based traversal.
         """
-    def __iter__(self) -> Iterator[PageElement]:
+    def __iter__(self):
         """
-        Iterate over all nodes in the parse tree in document order.
+        Iterate over all nodes in document order, starting with the
+        BeautifulSoup root ([document]), followed by all descendants.
+        """
+        # 1. Yield the root itself (the BeautifulSoup object)
+        yield self  
 
-        This uses the .descendants generator from Tag/PageElement and
-        does not build an intermediate list of nodes, so it satisfies
-        the Milestone 4 requirement.
-        """
-        return self.descendants
+        # 2. Then continue with all descendants (already a generator)
+        for node in self.descendants:
+            yield node
 
     def decode(
         self,
