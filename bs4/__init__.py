@@ -1070,6 +1070,24 @@ class BeautifulSoup(Tag):
         """
         self.current_data.append(data)
 
+    """
+        Make the BeautifulSoup object iterable.
+        Milestone 4 requirement:
+        Iterating over a soup object (e.g. `for node in soup:`)
+        must yield **every node in the tree in document order**.
+        - We MUST NOT build a list of nodes first (no recursion, no list accumulation).
+        - We MUST use an existing generator-based traversal.
+        """
+    def __iter__(self) -> Iterator[PageElement]:
+        """
+        Iterate over all nodes in the parse tree in document order.
+
+        This uses the .descendants generator from Tag/PageElement and
+        does not build an intermediate list of nodes, so it satisfies
+        the Milestone 4 requirement.
+        """
+        return self.descendants
+
     def decode(
         self,
         indent_level: Optional[int] = None,
